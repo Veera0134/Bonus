@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_bonus
+    ports:
+      - "6589:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: bonus_proposals
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - bonus_net
+
+  backend:
+    build:
+      context: ./Backend
+    container_name: backend_bonus
+    ports:
+      - "3030:3030"
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: admin123
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: bonus_proposals
+    networks:
+      - bonus_net
+
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: frontend_bonus
+    ports:
+      - "8111:80"
+    depends_on:
+      - backend
+    networks:
+      - bonus_net
+
+  hr:
+    build:
+      context: ./HR
+    container_name: hr_bonus
+    ports:
+      - "8112:80"
+    depends_on:
+      - backend
+    networks:
+      - bonus_net
+
+volumes:
+  pg_data:
+
+networks:
+  bonus_net:
+
